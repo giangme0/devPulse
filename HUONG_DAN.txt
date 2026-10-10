@@ -1,0 +1,15 @@
+Dat clear_data.js canh package.json cua DevPulse. Can Node.js 24+.
+
+Dung app truoc khi xoa:
+systemctl --user stop devpulse.service
+
+Xem truoc (khong xoa):
+node clear_data.js --dry-run
+
+Xoa toan bo ban ghi trong database:
+node clear_data.js
+
+Bat lai app:
+systemctl --user start devpulse.service
+
+Giu nguyen schema, .env va settings.json. Xoa ca lich su chi phi va lich chay. Scheduler co the lay tin va goi AI lai khi bat app.

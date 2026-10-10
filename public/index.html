@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>DevPulse AI — Bản tin của bạn</title>
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="/"
+        ><span class="brand-mark">ϟ</span
+        ><span>DevPulse <b>AI</b><small>Ít nhiễu. Đúng việc.</small></span></a
+      >
+      <nav aria-label="Điều hướng">
+        <button class="nav-item active" id="nav-news">
+          <span>▤</span> Bản tin</button
+        ><button class="nav-item" id="nav-saved">
+          <span>☆</span> Đã lưu đọc sau</button
+        ><button class="nav-item" id="nav-settings">
+          <span>⚙</span> Cài đặt
+        </button>
+      </nav>
+      <div class="history">
+        <h2>Lịch sử theo ngày</h2>
+        <label class="sr-only" for="day-picker">Chọn ngày lưu tin</label
+        ><input type="date" id="day-picker" />
+        <div id="calendar"></div>
+        <div id="date-list"></div>
+      </div>
+      <div class="sidebar-bottom">
+        <span class="online-dot"></span> Đang chạy local
+        <small>Tất cả tin được lưu bền theo ngày.</small>
+      </div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar">
+        <span class="eyebrow">PERSONAL TECH READER</span>
+        <div class="header-actions">
+          <button id="cost-button">◷ Chi phí AI</button
+          ><button class="primary" id="refresh">↻ Cập nhật ngay</button>
+        </div>
+      </header>
+      <div id="notice" class="notice" hidden></div>
+      <div class="content">
+        <section class="feed">
+          <div class="feed-heading">
+            <h1 id="page-title">Bản tin hôm nay</h1>
+            <p id="counts">Đang tải…</p>
+          </div>
+          <div
+            class="filters"
+            id="categories"
+            role="group"
+            aria-label="Chủ đề"
+          ></div>
+          <div class="search-row">
+            <input
+              id="search"
+              type="search"
+              placeholder="Tìm trong tin đã lưu…"
+              aria-label="Tìm kiếm"
+            /><label class="check-label"
+              ><input type="checkbox" id="only-recommended" /> Đáng xem</label
+            >
+          </div>
+          <div class="read-tabs" role="group" aria-label="Trạng thái đọc">
+            <button data-read="all" class="active">Tất cả</button
+            ><button data-read="0">Chưa đọc</button
+            ><button data-read="1">Đã đọc</button>
+          </div>
+          <div id="article-list" aria-live="polite"></div>
+          <button id="load-more" hidden>Xem thêm</button>
+        </section>
+        <section id="preview" class="preview" aria-label="Chi tiết tin">
+          <div class="empty">
+            <div class="empty-icon">▤</div>
+            <h2>Chọn một tin để đọc</h2>
+            <p>
+              Điểm chính và điều kiện áp dụng<br />được trình bày ngắn gọn tại
+              đây.
+            </p>
+          </div>
+        </section>
+      </div>
+      <footer class="statusbar">
+        <button id="run-log">Lịch sử cập nhật</button
+        ><span id="run-status">Đang kết nối…</span>
+      </footer>
+    </div>
+    <dialog id="cost-dialog">
+      <div class="dialog-head">
+        <div>
+          <h2>Chi phí AI</h2>
+          <p>Mức sử dụng của toàn ứng dụng</p>
+        </div>
+        <button data-close aria-label="Đóng">✕</button>
+      </div>
+      <label class="inline-label"
+        >Khoảng thời gian
+        <select id="cost-range">
+          <option value="1">Hôm nay</option>
+          <option value="7" selected>7 ngày gần nhất</option>
+          <option value="30">30 ngày gần nhất</option>
+          <option value="36500">Toàn bộ</option>
+        </select></label
+      >
+      <div id="cost-content"></div>
+      <p class="fineprint">
+        Ước tính USD theo usage API và đơn giá đã cấu hình tại thời điểm gọi.
+        Không phải hóa đơn OpenAI. Cached input là một phần của input, không
+        cộng hai lần.
+      </p>
+      <div class="dialog-foot">
+        <button class="primary" data-close>Đóng</button>
+      </div>
+    </dialog>
+    <dialog id="settings-dialog" class="wide-dialog">
+      <div class="dialog-head">
+        <div>
+          <h2>Cài đặt</h2>
+          <p>Profile, OpenAI và lịch cập nhật</p>
+        </div>
+        <button data-close aria-label="Đóng">✕</button>
+      </div>
+      <form id="settings-form">
+        <fieldset>
+          <legend>OpenAI API</legend>
+          <label
+            >API key
+            <input
+              name="openaiKey"
+              type="password"
+              autocomplete="new-password"
+              placeholder="Để trống để giữ key hiện tại"
+          /></label>
+          <p id="key-status" class="fineprint"></p>
+          <label class="check-label"
+            ><input type="checkbox" name="clearKey" /> Xóa key đã lưu trên
+            máy</label
+          >
+          <div class="form-grid">
+            <label
+              >Model
+              <input name="model" required placeholder="gpt-4.1-mini" /></label
+            ><label
+              >Ngân sách dự kiến / ngày (USD)<input
+                name="dailyBudget"
+                type="number"
+                min="0.001"
+                max="100"
+                step="0.001"
+                required
+            /></label>
+          </div>
+          <p class="fineprint">
+            Đơn giá USD / 1 triệu tokens. Khi đổi model, hãy cập nhật cả 3 đơn
+            giá.
+          </p>
+          <div class="form-grid three">
+            <label
+              >Input<input
+                name="inputPrice"
+                type="number"
+                min="0"
+                step="any"
+                required /></label
+            ><label
+              >Cached input<input
+                name="cachedPrice"
+                type="number"
+                min="0"
+                step="any"
+                required /></label
+            ><label
+              >Output<input
+                name="outputPrice"
+                type="number"
+                min="0"
+                step="any"
+                required
+            /></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Lịch tự động</legend>
+          <label class="check-label"
+            ><input name="scheduleEnabled" type="checkbox" /> Tự cập nhật mỗi
+            ngày</label
+          >
+          <div class="form-grid">
+            <label
+              >Giờ cập nhật<input
+                name="scheduleTime"
+                type="time"
+                required /></label
+            ><label>Timezone<input name="timezone" required /></label
+            ><label
+              >Tối đa lượt AI tự động/ngày<input
+                name="autoLimit"
+                type="number"
+                min="1"
+                max="10"
+                required
+            /></label>
+          </div>
+          <p class="fineprint">
+            Service phải đang chạy, máy có mạng và không sleep. Bỏ lỡ lịch sẽ
+            cập nhật khi máy hoạt động lại. Tin khác có thể tóm tắt thủ công.
+          </p>
+        </fieldset>
+        <fieldset>
+          <legend>Nội dung quan tâm</legend>
+          <label
+            >Profile<textarea
+              name="profile"
+              rows="4"
+              maxlength="4000"
+              required
+            ></textarea>
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Nguồn thu thập</legend>
+          <div class="source-checks">
+            <label
+              ><input type="checkbox" name="githubCopilot" /> GitHub Copilot
+              changelog</label
+            ><label
+              ><input type="checkbox" name="microsoft" /> Microsoft Blog</label
+            ><label
+              ><input type="checkbox" name="huggingface" /> Hugging Face
+              Papers</label
+            ><label
+              ><input type="checkbox" name="github" /> GitHub Search (Python /
+              TypeScript)</label
+            ><label
+              ><input type="checkbox" name="daily" /> daily.dev RSS (tùy
+              chọn)</label
+            >
+          </div>
+            <div class="source-checks" id="rss-source-checks"></div>
+          <label
+            >URL RSS cá nhân daily.dev<input
+              name="dailyFeedUrl"
+              type="url"
+              placeholder="https://rss-app.daily.dev/…" /></label
+          ><label
+            >GitHub token (tùy chọn)<input
+              name="githubToken"
+              type="password"
+              autocomplete="new-password"
+              placeholder="Để trống để giữ token hiện tại" /></label
+          ><label class="check-label"
+            ><input name="clearGithub" type="checkbox" /> Xóa GitHub token đã
+            lưu</label
+          >
+          <p class="fineprint">
+            Mỗi nguồn RSS có hạn mức riêng. GitHub Search không phải GitHub
+            Trending. Lỗi từng nguồn được ghi trong Lịch sử cập nhật.
+          </p>
+        </fieldset>
+        <p id="settings-error" class="error" role="alert"></p>
+        <div class="dialog-foot">
+          <button type="button" data-close>Hủy</button
+          ><button type="submit" class="primary">Lưu cài đặt</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="logs-dialog" class="wide-dialog">
+      <div class="dialog-head">
+        <h2>Lịch sử cập nhật</h2>
+        <button data-close aria-label="Đóng">✕</button>
+      </div>
+      <div id="logs-content"></div>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>

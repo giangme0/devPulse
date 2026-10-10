@@ -1,0 +1,18 @@
+{
+  "name": "devpulse-local",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local AI tech reader — vanilla HTML/CSS/JS, Node HTTP and SQLite",
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/*.test.js",
+    "demo": "node scripts/demo.js"
+  },
+  "dependencies": {
+    "fast-xml-parser": "5.11.2"
+  }
+}
